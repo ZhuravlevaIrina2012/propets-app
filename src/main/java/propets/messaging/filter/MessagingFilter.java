@@ -23,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import propets.messaging.dto.UserDataDto;
+import propets.messaging.dto.UserInfoDto;
 
 @Service
 public class MessagingFilter implements Filter {
@@ -43,9 +43,9 @@ public class MessagingFilter implements Filter {
 					HttpHeaders headers = new HttpHeaders();
 					headers.add(TOKEN_HEADER, token);
 					RequestEntity<String> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, new URI(URI_VALIDATION));
-					ResponseEntity<UserDataDto> responseEntity = restTemplate.exchange(requestEntity, UserDataDto.class);
-					UserDataDto userDataDto = responseEntity.getBody();
-					if (userDataDto == null) {
+					ResponseEntity<UserInfoDto> responseEntity = restTemplate.exchange(requestEntity, UserInfoDto.class);
+					UserInfoDto userInfoDto = responseEntity.getBody();
+					if (userInfoDto == null) {
 						response.sendError(404);
 						return;
 					}
