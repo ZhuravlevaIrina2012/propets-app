@@ -3,6 +3,7 @@ package propets.messaging.model;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import propets.messaging.upload.FileUpload;
 
 @Getter
 @EqualsAndHashCode(of = { "id" })
@@ -37,13 +39,15 @@ public class Post {
 		this();
 		this.userLogin = userLogin;
 		this.userName = userName;
-		this.avatar = avatar;
+		this.avatar = FileUpload.loadFile(avatar);
 		this.text = text;
-		this.images = images;
+		this.images = images.stream()
+							.map(i -> FileUpload.loadFile(i))
+							.collect(Collectors.toSet());
 	}
 	
 	public boolean addImage(String image) {
-		return images.add(image);
+		return images.add(FileUpload.loadFile(image));
 	}
 	
 	public boolean removeImage(String image) {
