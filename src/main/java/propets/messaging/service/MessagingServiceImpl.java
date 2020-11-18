@@ -8,6 +8,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import propets.messaging.dao.MessagingRepository;
 import propets.messaging.dto.NewPostDto;
@@ -21,25 +22,26 @@ public class MessagingServiceImpl implements MessagingService {
 
 	@Autowired
 	MessagingRepository messagingRepository;
-	
+
 	@Autowired
 	ModelMapper modelMapper;
-	 
+
 	@Override
-	public PostDto createPost(String login, NewPostDto newPostDto) {
-		Post post = new Post(login, "Anna Smith", "https://www.gravatar.com/avatar/0?d=mp", newPostDto.getText(), newPostDto.getImages());
+	public PostDto createPost(String login, String userName, String avatar, NewPostDto newPostDto) {
+		Post post = new Post(login, userName, avatar, newPostDto.getText(), newPostDto.getImages());
 		messagingRepository.save(post);
 		return modelMapper.map(post, PostDto.class);
 	}
 
 	@Override
+	@Transactional
 	public PostDto updatePost(String id, NewPostDto newPostDto) {
 		Post post = messagingRepository.findById(id).orElseThrow(() -> new WrongParameters());
-		String avatar = "https://www.gravatar.com/avatar/0?d=mp";
+		String avatar = post.getAvatar();
 		if (avatar != null) {
 			post.setAvatar(avatar);
 		}
-		String name = "Anna Smith";
+		String name = post.getUserName();
 		if (name != null) {
 			post.setUserName(name);
 		}
@@ -56,6 +58,7 @@ public class MessagingServiceImpl implements MessagingService {
 	}
 
 	@Override
+	@Transactional
 	public PostDto deletePost(String id) {
 		Post post = messagingRepository.findById(id).orElseThrow(() -> new WrongParameters());
 		messagingRepository.delete(post);
@@ -70,18 +73,15 @@ public class MessagingServiceImpl implements MessagingService {
 
 	@Override
 	public ViewPostsDto viewPosts(int itemsOnPage, int currentPage) {
-		List<PostDto> posts = messagingRepository.findAll(PageRequest.of(currentPage-1, itemsOnPage))
-							.map(p -> modelMapper.map(p, PostDto.class))
-							.getContent();
+		List<PostDto> posts = messagingRepository.findAll(PageRequest.of(currentPage - 1, itemsOnPage))
+				.map(p -> modelMapper.map(p, PostDto.class)).getContent();
 		return new ViewPostsDto(itemsOnPage, currentPage, messagingRepository.findAll().size(), posts);
 	}
 
 	@Override
 	public List<PostDto> getPosts(Set<String> postsId) {
-		return postsId.stream()
-				.map(id -> messagingRepository.findById(id).orElseThrow(() -> new WrongParameters()))
-				.map(p -> modelMapper.map(p, PostDto.class))
-				.collect(Collectors.toList());
+		return postsId.stream().map(id -> messagingRepository.findById(id).orElseThrow(() -> new WrongParameters()))
+				.map(p -> modelMapper.map(p, PostDto.class)).collect(Collectors.toList());
 	}
 
 }

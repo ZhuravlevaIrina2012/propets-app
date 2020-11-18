@@ -9,7 +9,7 @@ import propets.messaging.dto.ViewPostsDto;
 
 public interface MessagingService {
 	
-	PostDto createPost(String login, NewPostDto newPostDto);
+	PostDto createPost(String login, String userName, String avatar, NewPostDto newPostDto);
 	
 	PostDto updatePost(String id, NewPostDto newPostDto);
 	
